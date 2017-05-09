@@ -7,7 +7,7 @@ package jogodamesada.model;
 
 /**
  *
- * @author alyso
+ * @author Alyson Dantas
  */
 public class Sala {
 
@@ -20,8 +20,12 @@ public class Sala {
     private int tamanho;
     private boolean aberta;
     private int votos;
+    private static Integer serialId=0;//SerialID é quem vai definir o id de cada sala quando for criado
+    private int id;//id da sala
     
     public Sala(){
+        serialId=serialId+1;//Incrementa o SerialID para que não se repita
+	this.id=serialId;//id da sala recebe o serialID da criação
         tamanho = 0;
         aberta = true;
         votos = 0;
@@ -97,5 +101,9 @@ public class Sala {
 
     public int getVotos() {
         return votos;
+    }
+    
+    public int getId() {
+        return id;
     }
 }
