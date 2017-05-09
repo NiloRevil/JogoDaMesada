@@ -14,6 +14,8 @@ import java.io.Serializable;
 public class Cliente implements Serializable{
     private String nome;
     private String senha;
+    private String ip;
+    private String porta;
     
     public Cliente(String nome, String senha){
         this.nome = nome;
@@ -32,4 +34,22 @@ public class Cliente implements Serializable{
     public void setSenha(String senha){
         this.senha = senha;
     }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public String getPorta() {
+        return porta;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public void setPorta(String porta) {
+        this.porta = porta;
+    }
+    
+    
 }

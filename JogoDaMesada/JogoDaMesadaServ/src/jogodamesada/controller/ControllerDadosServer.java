@@ -28,7 +28,7 @@ import jogodamesada.model.*;
 public class ControllerDadosServer {
 
     private static ControllerDadosServer unicaInstancia;
-    
+
     private List<Cliente> clientesAguardando;
     private List<Sala> salasAbertas;
     private List<Sala> salasFechadas;
@@ -123,78 +123,64 @@ public class ControllerDadosServer {
     }
 
     public int jogar(String nome, String senha, String ip, int porta) throws CampoVazioException, IOException, FileNotFoundException, ClassNotFoundException, SenhaIncorretaException {
-        if(nome == null || nome.equals("") || senha == null || senha.equals("")){
+        if (nome == null || nome.equals("") || senha == null || senha.equals("")) {
             throw new CampoVazioException();
         }
         Cliente cliente = getCliente(nome, senha);
-        if(salasAbertas.size() == 0){
+        if (salasAbertas.size() == 0) {
             Sala sala = new Sala();
-            sala.setTamanho(1);
-            sala.setCliente1(cliente);
+            List<Cliente> clientes = sala.getClientes();
+            clientes.add(cliente);
             salasAbertas.add(sala);
             return sala.getId();
-        }else if(salasAbertas.size() > 0){
+        } else {
             Sala sala;
             Iterator<Sala> ite = salasAbertas.iterator();
-            while(ite.hasNext()){
+            while (ite.hasNext()) {
                 sala = ite.next();
-                switch (sala.getTamanho()) {
-                    case 1:
-                        sala.setCliente2(cliente);
-                        sala.setTamanho(2);
-                        return sala.getId();
-                    case 2:
-                        sala.setCliente3(cliente);
-                        sala.setTamanho(3);
-                        return sala.getId();
-                    case 3:
-                        sala.setCliente4(cliente);
-                        sala.setTamanho(4);
-                        return sala.getId();
-                    case 4:
-                        sala.setCliente5(cliente);
-                        sala.setTamanho(5);
-                        return sala.getId();
-                    case 5:
-                        sala.setCliente5(cliente);
-                        sala.setTamanho(6);
-                        sala.setAberta(false);
-                        return sala.getId();
+                List<Cliente> clientes = sala.getClientes();
+                if (sala.getTamanho() == 6) {
+                    clientes.add(cliente);
+                    sala.setAberta(false);
+                    return sala.getId();
+                } else {
+                    clientes.add(cliente);
+                    return sala.getId();
                 }
             }
         }
         return -1;
     }
 
-    public Sala getSala(int id){
+    public Sala getSala(int id) {
         Iterator<Sala> itera = salasAbertas.iterator();
         Sala sala;
-        while(itera.hasNext()){
+        while (itera.hasNext()) {
             sala = itera.next();
-            if(sala.getId() == id){
+            if (sala.getId() == id) {
                 return sala;
             }
         }
         itera = salasFechadas.iterator();
-        while(itera.hasNext()){
+        while (itera.hasNext()) {
             sala = itera.next();
-            if(sala.getId() == id){
+            if (sala.getId() == id) {
                 return sala;
             }
         }
-        
+
         return null;
     }
-    
+
     public String iniciarJogo(int id) {
         Sala sala = getSala(id);
         salasAbertas.remove(sala);
         salasFechadas.add(sala);
         return "";
     }
-    
-    public String finalizaJogo(int id, double saldo1, double saldo2, double saldo3, double saldo4, double saldo5, double saldo6){
-        
+
+    public String finalizaJogo(int id, double saldo1, double saldo2, double saldo3, double saldo4, double saldo5, double saldo6) {
+
         return "";
     }
 }
