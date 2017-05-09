@@ -12,11 +12,17 @@ package jogodamesada.model;
 public class Sala {
 
     private Cliente cliente1;
+    private String ipPorta1;
     private Cliente cliente2;
+    private String ipPorta2;
     private Cliente cliente3;
+    private String ipPorta3;
     private Cliente cliente4;
+    private String ipPorta4;
     private Cliente cliente5;
+    private String ipPorta5;
     private Cliente cliente6;
+    private String ipPorta6;
     private int tamanho;
     private boolean aberta;
     private int votos;
@@ -106,4 +112,50 @@ public class Sala {
     public int getId() {
         return id;
     }
+    
+    public String getIpPorta1() {
+        return ipPorta1;
+    }
+
+    public String getIpPorta2() {
+        return ipPorta2;
+    }
+
+    public String getIpPorta3() {
+        return ipPorta3;
+    }
+
+    public String getIpPorta4() {
+        return ipPorta4;
+    }
+
+    public String getIpPorta5() {
+        return ipPorta5;
+    }
+
+    public String getIpPorta6() {
+        return ipPorta6;
+    }
+
+    public void setIpPorta1(String ipPorta1) {
+        this.ipPorta1 = ipPorta1;
+    }
+
+    public void setIpPorta2(String ipPorta2) {
+        this.ipPorta2 = ipPorta2;
+    }
+
+    public void setIpPorta3(String ipPorta3) {
+        this.ipPorta3 = ipPorta3;
+    }
+
+    public void setIpPorta4(String ipPorta4) {
+        this.ipPorta4 = ipPorta4;
+    }
+
+    public void setIpPorta5(String ipPorta5) {
+        this.ipPorta5 = ipPorta5;
+    }
+    
+    
 }

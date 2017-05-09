@@ -122,7 +122,10 @@ public class ControllerDadosServer {
         }
     }
 
-    public int jogar(String nome, String senha, String ip, String porta) throws CampoVazioException, IOException, FileNotFoundException, ClassNotFoundException, SenhaIncorretaException {
+    public int jogar(String nome, String senha, String ip, int porta) throws CampoVazioException, IOException, FileNotFoundException, ClassNotFoundException, SenhaIncorretaException {
+        if(nome == null || nome.equals("") || senha == null || senha.equals("")){
+            throw new CampoVazioException();
+        }
         Cliente cliente = getCliente(nome, senha);
         if(salasAbertas.size() == 0){
             Sala sala = new Sala();

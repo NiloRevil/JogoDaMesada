@@ -16,6 +16,7 @@ import javax.swing.JTextArea;
 import jogodamesada.controller.*;
 import jogodamesada.exceptions.*;
 import jogodamesada.model.Pacote;
+import jogodamesada.model.Sala;
 
 /**
  *
@@ -70,6 +71,42 @@ public class ThreadServidorConexao extends Thread {
 				}
 				saida.flush();
 				break;
+                        case 1://acessa uma sala
+                            String nomeAcesso = informacoes[1];
+                            String senhaAcesso = informacoes[2];
+                            String ipAcesso = cliente.getInetAddress().getHostAddress();
+                            int portaAcesso = cliente.getPort();
+                            Sala salaAcesso;
+                            int idSala = -1;
+                            boolean javotou = false;
+                            try{
+                                idSala = controller.jogar(nomeAcesso, senhaAcesso, ipAcesso, portaAcesso);
+                                if(idSala>-1){
+                                    Sala salaAtual = controller.getSala(idSala);
+                                    if(salaAtual.getTamanho()==6){
+                                        String conexao = "1|" + controller.iniciarJogo(idSala);
+                                        saida.writeObject(conexao);
+                                        saida.flush();
+                                    }else{
+                                        while(salaAtual.isAberta()){
+                                            Thread.sleep(1000);
+                                            int tamanho = salaAtual.getTamanho();
+                                            String informacao = "0|" + tamanho;
+                                            if(tamanho > 1){
+                                                //int votos = salaAtual.getVotos();
+                                                informacao = informacao + "|podeiniciar";
+                                            }else{
+                                                informacao = informacao + "|aindanao";
+                                            }
+                                            saida.writeObject("0|" + tamanho);//0 é resposta de que ainda esta procurando jogadores
+                                            saida.flush();
+                                        }
+                                    }
+                                }
+                            }catch(Exception e){
+                                
+                            }
+                            break;
 			}
 			System.out.println("\nCliente atendido com sucesso: " + s + cliente.getRemoteSocketAddress().toString());
 			textField.setText(textField.getText() + "\nCliente atendido com sucesso: " + s + cliente.getRemoteSocketAddress().toString());//coloca o log no textArea
