@@ -11,8 +11,10 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 import javax.swing.JTextArea;
 import jogodamesada.controller.*;
+import jogodamesada.exceptions.*;
 import jogodamesada.model.Pacote;
 
 /**
@@ -47,24 +49,24 @@ public class ThreadServidorConexao extends Thread {
 			//ObjectInputStream para receber o nome do arquivo
 			ObjectInputStream   entrada = new ObjectInputStream(cliente.getInputStream());//cria um objeto de entrada
 			ObjectOutputStream saida = new ObjectOutputStream(cliente.getOutputStream());//cria um objeto de saida
-			Pacote pack = (Pacote) entrada.readObject();//obtem o pacote de entrada
-			int opcao = pack.getOpcao();//recebe a opcao que o cliente mandou
-			List<String> informacoes = pack.getLista();//recebe a lista de informações
-			Iterator<String> itera = informacoes.iterator();
-			Pacote enviarResultado = new Pacote();//cria novo pacote para envio
-			List<String> result = new ArrayList<String>();//cria uma nova lista de informaçõoes para envio
+			String pack = (String) entrada.readObject();//obtem o pacote de entrada
+                        String informacoes[] = pack.split(Pattern.quote("|"));
+			int opcao = Integer.parseInt(informacoes[0]);//recebe a opcao que o cliente mandou
 			String s = "erro";//string de log com erro
 			switch(opcao){
 			case 0://Cadastro de novo jogador
-				String nome = itera.next();//recebe as informações para cadastro
-				String senha = itera.next();
+				String nome = informacoes[1];//recebe as informações para cadastro
+				String senha = informacoes[2];
 
 				try{
+                                    
 					controller.cadastrarConta(nome,  senha);//controller cadastra cliente
 					s = "Criar cadastro " + nome;//log
 					saida.writeObject("concluido");//envia resposta concluido
-				}catch(Exception e){
+				}catch(CampoVazioException e){
 					saida.writeObject("camponaopreenchido");//erro de campo nao preenchido
+				}catch(CadastroJaExistenteException e){
+					saida.writeObject("cadastrojaexistente");//erro de campo nao preenchido
 				}
 				saida.flush();
 				break;
@@ -79,7 +81,7 @@ public class ThreadServidorConexao extends Thread {
 
 		catch(Exception e) {//caso alguma exceção seja lançada
 			System.out.println("Excecao ocorrida na thread: " + e.getMessage());
-			textField.setText(textField.getText() + "\nExcecao ocorrida na thread: " + e.getMessage());//caso alguma exceção desconheciada seja lançada ela encerra a thread e é exibida
+			textField.setText(textField.getText() + "\nExcecao ocorrida na thread: " + e);//caso alguma exceção desconheciada seja lançada ela encerra a thread e é exibida
 			try {
 				cliente.close();   //finaliza o cliente
 			}catch(Exception ec) {
