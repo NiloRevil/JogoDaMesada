@@ -23,107 +23,112 @@ import jogodamesada.model.Sala;
  * @author Alyson Dantas
  */
 public class ThreadServidorConexao extends Thread {
-	private Socket cliente;//socket do cliente
-	private ServerSocket server;//socket do servidor
-	private JTextArea textField;//para atualizar a interface
-	private ControllerDadosServer controller = ControllerDadosServer.getInstance();//instancia do controller
 
-	/**
-	 * Construtor
-	 * @param server Servidor que aceita os clientes
-	 * @param textField Area de log na interface
-	 * @param cliente Cliente que ja foi aceito
-	 */
-	public ThreadServidorConexao(ServerSocket server, JTextArea textField, Socket cliente) {//recebe o socket server e o textArea
-		this.server = server; 
-		this.cliente = cliente;
-		this.textField = textField;
-	}
+    private Socket cliente;//socket do cliente
+    private ServerSocket server;//socket do servidor
+    private JTextArea textField;//para atualizar a interface
+    private ControllerDadosServer controller = ControllerDadosServer.getInstance();//instancia do controller
 
-	/**
-	 * Metodo Run da Thread
-	 */
-	public void run() {
-		try {
-			//Inicia thread do cliente aceitando clientes
+    /**
+     * Construtor
+     *
+     * @param server Servidor que aceita os clientes
+     * @param textField Area de log na interface
+     * @param cliente Cliente que ja foi aceito
+     */
+    public ThreadServidorConexao(ServerSocket server, JTextArea textField, Socket cliente) {//recebe o socket server e o textArea
+        this.server = server;
+        this.cliente = cliente;
+        this.textField = textField;
+    }
 
-			//ObjectInputStream para receber o nome do arquivo
-			ObjectInputStream   entrada = new ObjectInputStream(cliente.getInputStream());//cria um objeto de entrada
-			ObjectOutputStream saida = new ObjectOutputStream(cliente.getOutputStream());//cria um objeto de saida
-			String pack = (String) entrada.readObject();//obtem o pacote de entrada
-                        String informacoes[] = pack.split(Pattern.quote("|"));
-			int opcao = Integer.parseInt(informacoes[0]);//recebe a opcao que o cliente mandou
-			String s = "erro";//string de log com erro
-			switch(opcao){
-			case 0://Cadastro de novo jogador
-				String nome = informacoes[1];//recebe as informações para cadastro
-				String senha = informacoes[2];
+    /**
+     * Metodo Run da Thread
+     */
+    public void run() {
+        try {
+            //Inicia thread do cliente aceitando clientes
 
-				try{
-                                    
-					controller.cadastrarConta(nome,  senha);//controller cadastra cliente
-					s = "Criar cadastro " + nome;//log
-					saida.writeObject("concluido");//envia resposta concluido
-				}catch(CampoVazioException e){
-					saida.writeObject("camponaopreenchido");//erro de campo nao preenchido
-				}catch(CadastroJaExistenteException e){
-					saida.writeObject("cadastrojaexistente");//erro de campo nao preenchido
-				}
-				saida.flush();
-				break;
-                        case 1://acessa uma sala
-                            String nomeAcesso = informacoes[1];
-                            String senhaAcesso = informacoes[2];
-                            String ipAcesso = cliente.getInetAddress().getHostAddress();
-                            int portaAcesso = cliente.getPort();
-                            Sala salaAcesso;
-                            int idSala = -1;
-                            boolean javotou = false;
-                            try{
-                                idSala = controller.jogar(nomeAcesso, senhaAcesso, ipAcesso, portaAcesso);
-                                if(idSala>-1){
-                                    Sala salaAtual = controller.getSala(idSala);
-                                    if(salaAtual.getTamanho()==6){
-                                        String conexao = "1|" + controller.iniciarJogo(idSala);
-                                        saida.writeObject(conexao);
-                                        saida.flush();
-                                    }else{
-                                        while(salaAtual.isAberta()){
-                                            Thread.sleep(1000);
-                                            int tamanho = salaAtual.getTamanho();
-                                            String informacao = "0|" + tamanho;
-                                            if(tamanho > 1){
-                                                //int votos = salaAtual.getVotos();
-                                                informacao = informacao + "|podeiniciar";
-                                            }else{
-                                                informacao = informacao + "|aindanao";
-                                            }
-                                            saida.writeObject("0|" + tamanho);//0 é resposta de que ainda esta procurando jogadores
-                                            saida.flush();
-                                        }
+            //ObjectInputStream para receber o nome do arquivo
+            ObjectInputStream entrada = new ObjectInputStream(cliente.getInputStream());//cria um objeto de entrada
+            ObjectOutputStream saida = new ObjectOutputStream(cliente.getOutputStream());//cria um objeto de saida
+            String pack = (String) entrada.readObject();//obtem o pacote de entrada
+            String informacoes[] = pack.split(Pattern.quote("|"));
+            int opcao = Integer.parseInt(informacoes[0]);//recebe a opcao que o cliente mandou
+            String s = "erro";//string de log com erro
+            switch (opcao) {
+                case 0://Cadastro de novo jogador
+                    String nome = informacoes[1];//recebe as informações para cadastro
+                    String senha = informacoes[2];
+                    try {
+                        controller.cadastrarConta(nome, senha);//controller cadastra cliente
+                        s = "Criar cadastro " + nome;//log
+                        saida.writeObject("concluido");//envia resposta concluido
+                    } catch (CampoVazioException e) {
+                        saida.writeObject("camponaopreenchido");//erro de campo nao preenchido
+                    } catch (CadastroJaExistenteException e) {
+                        saida.writeObject("cadastrojaexistente");//erro de campo nao preenchido
+                    }
+                    saida.flush();
+                    break;
+                case 1://acessa uma sala
+                    String nomeAcesso = informacoes[1];
+                    String senhaAcesso = informacoes[2];
+                    String ipAcesso = cliente.getInetAddress().getHostAddress();
+                    int portaAcesso = cliente.getPort();
+                    Sala salaAcesso;
+                    System.out.println("atendendo o " + ipAcesso);
+                    int idSala = -1;
+                    try {
+                        System.out.println("entrando no jogo");
+                        idSala = controller.jogar(nomeAcesso, senhaAcesso, ipAcesso, portaAcesso);
+                        System.out.println("sala criada id:" + idSala);
+                        if (idSala > -1) {
+                            Sala salaAtual = controller.getSala(idSala);
+                            if (salaAtual.getTamanho() == 6) {
+                                String conexao = "1" + controller.iniciarJogo(idSala);
+                                System.out.println("sala fechou na thread");
+                                saida.writeObject(conexao);
+                                saida.flush();
+                            } else {
+                                while (salaAtual.isAberta()) {
+                                    Thread.sleep(1000);
+                                    int tamanho = salaAtual.getTamanho();
+                                    String informacao = "0|" + tamanho;
+
+                                    System.out.println("pessoas na sala:" + informacao);
+                                    if (tamanho > 1) {
+                                        //int votos = salaAtual.getVotos();
+                                        informacao = informacao + "|podeiniciar";
+                                    } else {
+                                        informacao = informacao + "|aindanao";
                                     }
+                                    saida.writeObject(informacao);//0 é resposta de que ainda esta procurando jogadores
+                                    saida.flush();
                                 }
-                            }catch(Exception e){
-                                
+                                saida.writeObject("1" + controller.conexoes(idSala));
+                                saida.flush();
                             }
-                            break;
-			}
-			System.out.println("\nCliente atendido com sucesso: " + s + cliente.getRemoteSocketAddress().toString());
-			textField.setText(textField.getText() + "\nCliente atendido com sucesso: " + s + cliente.getRemoteSocketAddress().toString());//coloca o log no textArea
+                        }
+                    } catch (Exception e) {
+                        System.out.println("conexao erro " + e);
+                    }
+                    break;
+            }
+            System.out.println("\nCliente atendido com sucesso: " + s + cliente.getRemoteSocketAddress().toString());
+            textField.setText(textField.getText() + "\nCliente atendido com sucesso: " + s + cliente.getRemoteSocketAddress().toString());//coloca o log no textArea
 
-			entrada.close();//finaliza a entrada
-			saida.close();//finaliza a saida
-			cliente.close();//fecha o cliente
-		}
-
-		catch(Exception e) {//caso alguma exceção seja lançada
-			System.out.println("Excecao ocorrida na thread: " + e.getMessage());
-			textField.setText(textField.getText() + "\nExcecao ocorrida na thread: " + e);//caso alguma exceção desconheciada seja lançada ela encerra a thread e é exibida
-			try {
-				cliente.close();   //finaliza o cliente
-			}catch(Exception ec) {
-				textField.setText(textField.getText() + "\nErro fatal cliente não finalizado: " + e.getMessage());//cliente não foi finalizado
-			}     
-		}
-	}
+            entrada.close();//finaliza a entrada
+            saida.close();//finaliza a saida
+            cliente.close();//fecha o cliente
+        } catch (Exception e) {//caso alguma exceção seja lançada
+            System.out.println("Excecao ocorrida na thread: " + e.getMessage());
+            textField.setText(textField.getText() + "\nExcecao ocorrida na thread: " + e);//caso alguma exceção desconheciada seja lançada ela encerra a thread e é exibida
+            try {
+                cliente.close();   //finaliza o cliente
+            } catch (Exception ec) {
+                textField.setText(textField.getText() + "\nErro fatal cliente não finalizado: " + ec.getMessage());//cliente não foi finalizado
+            }
+        }
+    }
 }

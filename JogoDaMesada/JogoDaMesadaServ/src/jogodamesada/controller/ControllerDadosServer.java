@@ -127,6 +127,9 @@ public class ControllerDadosServer {
             throw new CampoVazioException();
         }
         Cliente cliente = getCliente(nome, senha);
+        cliente.setIp(ip);
+        cliente.setPorta("" + porta);
+
         if (salasAbertas.size() == 0) {
             Sala sala = new Sala();
             List<Cliente> clientes = sala.getClientes();
@@ -139,7 +142,7 @@ public class ControllerDadosServer {
             while (ite.hasNext()) {
                 sala = ite.next();
                 List<Cliente> clientes = sala.getClientes();
-                if (sala.getTamanho() == 6) {
+                if (sala.getTamanho() == 5) {
                     clientes.add(cliente);
                     sala.setAberta(false);
                     return sala.getId();
@@ -175,8 +178,30 @@ public class ControllerDadosServer {
     public String iniciarJogo(int id) {
         Sala sala = getSala(id);
         salasAbertas.remove(sala);
+        sala.setAberta(false);
         salasFechadas.add(sala);
-        return "";
+        return conexoes(id);
+    }
+
+    public String conexoes(int id) {
+        Iterator<Sala> itera = salasFechadas.iterator();
+        Sala sala;
+        List<Cliente> clientes;
+        Iterator<Cliente> iteraCliente;
+        Cliente cliente;
+        String todasConexoes = "";
+        while(itera.hasNext()){
+            sala = itera.next();
+            if(sala.getId() == id){
+                iteraCliente = sala.getClientes().iterator();
+                while(iteraCliente.hasNext()){
+                    cliente = iteraCliente.next();
+                    todasConexoes = todasConexoes + "|" + cliente.getNome() + "$" + cliente.getIp() + "$" + cliente.getPorta();
+                }
+                return todasConexoes;
+            }
+        }
+        return null;
     }
 
     public String finalizaJogo(int id, double saldo1, double saldo2, double saldo3, double saldo4, double saldo5, double saldo6) {
