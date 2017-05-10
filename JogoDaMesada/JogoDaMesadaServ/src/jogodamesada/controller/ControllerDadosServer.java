@@ -219,8 +219,10 @@ public class ControllerDadosServer {
             }
         }
         List<Cliente> clientes = sala.getClientes();
+        List<Cliente> clientesVotos = sala.getVotosSim();
         if(clienteaux!=null){
             clientes.remove(clienteaux);
+            clientesVotos.remove(clienteaux);
             clientesOnline.remove(clienteaux);
         }
         
@@ -250,5 +252,38 @@ public class ControllerDadosServer {
         }
         
         return opcao;//0-usuario não esta online / 1-usuario esta online / 2-usuario estava ocioso
+    }
+    
+    public void votar(String nomeAcesso,String senhaAcesso, int idSala, String voto){
+        Cliente aux;
+        Sala sala = getSala(idSala);
+        List<Cliente> clientes = sala.getClientes();
+        Iterator<Cliente> itera = clientes.iterator();
+        while(itera.hasNext()){
+            aux = itera.next();
+            if(aux.getNome().equals(nomeAcesso)){
+                List<Cliente> clientesVotos = sala.getVotosSim();
+                Iterator<Cliente> iteraVotos = clientesVotos.iterator();
+                Cliente aux2 = null;
+                int naoEsta = 0;
+                while(iteraVotos.hasNext()){
+                    aux2 = iteraVotos.next();
+                    if(aux2.getNome().equals(aux.getNome())){
+                        //aux2 = aux;
+                        naoEsta = 1;
+                        break;
+                    }
+                }
+                if(naoEsta == 0 && voto.equals("Sim")){
+                    clientesVotos.add(aux);
+                    break;
+                }else if(naoEsta == 1 && voto.equals("Nao")){
+                    if(aux2!=null){
+                        clientesVotos.remove(aux2);
+                    }
+                }
+            }
+        }
+        
     }
 }

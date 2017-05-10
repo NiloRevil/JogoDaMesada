@@ -104,14 +104,24 @@ public class ThreadServidorConexao extends Thread {
 
                                             System.out.println("pessoas na sala:" + informacao);
                                             if (tamanho > 1) {
-                                                //int votos = salaAtual.getVotos();
+                                                int votos = salaAtual.getVotosSim().size();
+                                                if(votos == salaAtual.getTamanho()){
+                                                    controller.iniciarJogo(idSala);
+                                                    salaAtual.setAberta(false);
+                                                }
                                                 informacao = informacao + "|podeiniciar";
+                                                
                                             } else {
                                                 informacao = informacao + "|aindanao";
                                             }
                                             saida.writeObject(informacao);//0 é resposta de que ainda esta procurando jogadores
                                             saida.flush();
+                                            String votacao = (String) entrada.readObject();//obtem o pacote de entrada
+                                            String pessoaVoto[] = votacao.split(Pattern.quote("|"));
+                                            System.out.println("Pessoa:" + pessoaVoto[0] + "Voto:" + pessoaVoto[1]);
+                                            controller.votar(nomeAcesso,senhaAcesso, idSala, pessoaVoto[1]);
                                         }
+                                        System.out.println("A sala: " + idSala + " fechou com: " + controller.conexoes(idSala));
                                         saida.writeObject("1" + controller.conexoes(idSala));
                                         saida.flush();
                                     }

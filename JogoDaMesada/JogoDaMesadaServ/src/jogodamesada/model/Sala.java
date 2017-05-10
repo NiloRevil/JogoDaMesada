@@ -16,7 +16,7 @@ public class Sala {
 
     private List<Cliente> clientes;
     private boolean aberta;
-    private int votos;
+    private List<Cliente> votosSim;
     private static Integer serialId=0;//SerialID é quem vai definir o id de cada sala quando for criado
     private int id;//id da sala
     
@@ -24,8 +24,8 @@ public class Sala {
         serialId=serialId+1;//Incrementa o SerialID para que não se repita
 	this.id=serialId;//id da sala recebe o serialID da criação
         clientes = new ArrayList<Cliente>();
+        votosSim = new ArrayList<Cliente>();
         aberta = true;
-        votos = 0;
     }
 
     public int getTamanho() {
@@ -40,13 +40,6 @@ public class Sala {
         this.aberta = aberta;
     }
     
-        public void setVotos(int votos) {
-        this.votos = votos;
-    }
-
-    public int getVotos() {
-        return votos;
-    }
     
     public int getId() {
         return id;
@@ -58,6 +51,14 @@ public class Sala {
 
     public void setClientes(List<Cliente> clientes) {
         this.clientes = clientes;
+    }
+
+    public List<Cliente> getVotosSim() {
+        return votosSim;
+    }
+
+    public void setVotosSim(List<Cliente> votosSim) {
+        this.votosSim = votosSim;
     }
     
     
