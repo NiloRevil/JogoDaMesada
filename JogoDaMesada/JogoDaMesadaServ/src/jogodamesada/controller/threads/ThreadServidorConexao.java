@@ -75,59 +75,69 @@ public class ThreadServidorConexao extends Thread {
                 case 1://acessa uma sala
                     String nomeAcesso = informacoes[1];
                     String senhaAcesso = informacoes[2];
-                    
-                    int estaEmSala = controller.verificaUser(nomeAcesso);//criar switch case para os casos...
-                    
-                    String ipAcesso = cliente.getInetAddress().getHostAddress();
-                    int portaAcesso = cliente.getPort();
-                    Sala salaAcesso;
-                    System.out.println("atendendo o " + ipAcesso);
-                    int idSala = -1;
-                    try {
-                        System.out.println("entrando no jogo");
-                        idSala = controller.jogar(nomeAcesso, senhaAcesso, ipAcesso, portaAcesso);
-                        System.out.println("sala criada id:" + idSala);
-                        if (idSala > -1) {
-                            Sala salaAtual = controller.getSala(idSala);
-                            if (salaAtual.getTamanho() == 6) {
-                                String conexao = "1" + controller.iniciarJogo(idSala);
-                                System.out.println("sala fechou na thread");
-                                saida.writeObject(conexao);
-                                saida.flush();
-                            } else {
-                                while (salaAtual.isAberta()) {
-                                    Thread.sleep(1000);
-                                    int tamanho = salaAtual.getTamanho();
-                                    String informacao = "0|" + tamanho;
 
-                                    System.out.println("pessoas na sala:" + informacao);
-                                    if (tamanho > 1) {
-                                        //int votos = salaAtual.getVotos();
-                                        informacao = informacao + "|podeiniciar";
+                    int estaEmSala = controller.verificaUser(nomeAcesso);//criar switch case para os casos...
+
+                    switch (estaEmSala) {
+                        case 0://ele não estava on line antes, pode prosseguir.
+                            String ipAcesso = cliente.getInetAddress().getHostAddress();
+                            int portaAcesso = cliente.getPort();
+                            Sala salaAcesso;
+                            System.out.println("atendendo o " + ipAcesso);
+                            int idSala = -1;
+                            try {
+                                System.out.println("entrando no jogo");
+                                idSala = controller.jogar(nomeAcesso, senhaAcesso, ipAcesso, portaAcesso);
+                                System.out.println("sala criada id:" + idSala);
+                                if (idSala > -1) {
+                                    Sala salaAtual = controller.getSala(idSala);
+                                    if (salaAtual.getTamanho() == 6) {
+                                        String conexao = "1" + controller.iniciarJogo(idSala);
+                                        System.out.println("sala fechou na thread");
+                                        saida.writeObject(conexao);
+                                        saida.flush();
                                     } else {
-                                        informacao = informacao + "|aindanao";
+                                        while (salaAtual.isAberta()) {
+                                            Thread.sleep(1000);
+                                            int tamanho = salaAtual.getTamanho();
+                                            String informacao = "0|" + tamanho;
+
+                                            System.out.println("pessoas na sala:" + informacao);
+                                            if (tamanho > 1) {
+                                                //int votos = salaAtual.getVotos();
+                                                informacao = informacao + "|podeiniciar";
+                                            } else {
+                                                informacao = informacao + "|aindanao";
+                                            }
+                                            saida.writeObject(informacao);//0 é resposta de que ainda esta procurando jogadores
+                                            saida.flush();
+                                        }
+                                        saida.writeObject("1" + controller.conexoes(idSala));
+                                        saida.flush();
                                     }
-                                    saida.writeObject(informacao);//0 é resposta de que ainda esta procurando jogadores
-                                    saida.flush();
                                 }
-                                saida.writeObject("1" + controller.conexoes(idSala));
-                                saida.flush();
+                                s = "Entrar em sala: " + nomeAcesso;//log
+                            } catch (SocketException e) {
+                                System.out.println("cliente desconectou do nada: " + nomeAcesso);
+                                textField.setText(textField.getText() + "\nErro cliente desconectou inesperadamente: " + nomeAcesso);//cliente não foi finalizado
+                                try {
+                                    controller.removerClienteDaSala(nomeAcesso, idSala);
+                                } catch (Exception ea) {
+                                    System.out.println("deu ruim aqui " + e);
+                                }
+
+                            } catch (Exception e) {
+                                System.out.println("conexao erro " + e);
                             }
-                        }
-                        s = "Entrar em sala: " + nomeAcesso;//log
-                    } catch (SocketException e) {
-                        System.out.println("cliente desconectou do nada: " + nomeAcesso);
-                        textField.setText(textField.getText() + "\nErro cliente desconectou inesperadamente: " + nomeAcesso);//cliente não foi finalizado
-                        try{
-                            controller.removerClienteDaSala(nomeAcesso, idSala);
-                        }catch(Exception ea){
-                            System.out.println("deu ruim aqui " + e);
-                        }
-                        
-                        
-                    } catch (Exception e) {
-                        System.out.println("conexao erro " + e);
+                            break;
+                        case 1:
+                            saida.writeObject("2|" + "jaestaonline");//2 indica que o usuario esta on line no momento
+                            saida.flush();
+                            break;
+                        case 2:
+                            break;
                     }
+
                     break;
             }
             System.out.println("\nCliente atendido com sucesso: " + s + cliente.getRemoteSocketAddress().toString());
@@ -136,7 +146,15 @@ public class ThreadServidorConexao extends Thread {
             entrada.close();//finaliza a entrada
             saida.close();//finaliza a saida
             cliente.close();//fecha o cliente
-        } catch (Exception e) {//caso alguma exceção seja lançada
+        }catch(SocketException e){
+            System.out.println("Filanizou o atendimento.");
+            textField.setText(textField.getText() + "\nAtendimento foi finalizado.");//caso alguma exceção desconheciada seja lançada ela encerra a thread e é exibida
+            try {
+                cliente.close();   //finaliza o cliente
+            } catch (Exception ec) {
+                textField.setText(textField.getText() + "\nErro fatal cliente não finalizado: " + ec.getMessage());//cliente não foi finalizado
+            }
+        }catch (Exception e) {//caso alguma exceção seja lançada
             System.out.println("Excecao ocorrida na thread: " + e);
             textField.setText(textField.getText() + "\nExcecao ocorrida na thread: " + e.getMessage());//caso alguma exceção desconheciada seja lançada ela encerra a thread e é exibida
             try {

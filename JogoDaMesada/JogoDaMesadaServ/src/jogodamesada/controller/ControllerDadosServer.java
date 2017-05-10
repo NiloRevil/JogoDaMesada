@@ -133,7 +133,7 @@ public class ControllerDadosServer {
         Cliente cliente = getCliente(nome, senha);
         cliente.setIp(ip);
         cliente.setPorta("" + porta);
-
+        clientesOnline.add(cliente);
         if (salasAbertas.size() == 0) {
             Sala sala = new Sala();
             List<Cliente> clientes = sala.getClientes();
@@ -221,6 +221,7 @@ public class ControllerDadosServer {
         List<Cliente> clientes = sala.getClientes();
         if(clienteaux!=null){
             clientes.remove(clienteaux);
+            clientesOnline.remove(clienteaux);
         }
         
     }
@@ -230,25 +231,24 @@ public class ControllerDadosServer {
         return "";
     }
     
-    public int verificaUser(String nome) {
-        Cliente cliente;
+    public int verificaUser(String nome) {//adicionar eles nas listas...
+        Cliente cliente = null;
         Iterator<Cliente> itera = clientesOnline.iterator();
         int opcao = 0;
         while(itera.hasNext()){
             cliente = itera.next();
             if(cliente.getNome().equals(nome)){
-                opcao = 1;
-                break;
+                return opcao = 1;
             }
         }
         itera = clientesOciosos.iterator();
         while(itera.hasNext()){
             cliente = itera.next();
             if(cliente.getNome().equals(nome)){
-                opcao = 2;
-                break;
+                return opcao = 2;
             }
         }
+        
         return opcao;//0-usuario não esta online / 1-usuario esta online / 2-usuario estava ocioso
     }
 }
