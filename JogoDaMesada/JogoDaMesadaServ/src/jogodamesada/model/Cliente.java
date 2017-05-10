@@ -16,6 +16,7 @@ public class Cliente implements Serializable{
     private String senha;
     private String ip;
     private String porta;
+    private int salaAtual;
     
     public Cliente(String nome, String senha){
         this.nome = nome;
@@ -49,6 +50,14 @@ public class Cliente implements Serializable{
 
     public void setPorta(String porta) {
         this.porta = porta;
+    }
+
+    public int getSalaAtual() {
+        return salaAtual;
+    }
+
+    public void setSalaAtual(int salaAtual) {
+        this.salaAtual = salaAtual;
     }
     
     

@@ -29,14 +29,18 @@ public class ControllerDadosServer {
 
     private static ControllerDadosServer unicaInstancia;
 
-    private List<Cliente> clientesAguardando;
+  //  private List<Cliente> clientesAguardando;
     private List<Sala> salasAbertas;
     private List<Sala> salasFechadas;
+    private List<Cliente> clientesOnline;
+    private List<Cliente> clientesOciosos;
 
     private ControllerDadosServer() {
-        clientesAguardando = new ArrayList<Cliente>();
+        //clientesAguardando = new ArrayList<Cliente>();
         salasAbertas = new ArrayList<Sala>();
         salasFechadas = new ArrayList<Sala>();
+        clientesOciosos = new ArrayList<Cliente>();
+        clientesOnline = new ArrayList<Cliente>();
     }
 
     /**
@@ -203,9 +207,48 @@ public class ControllerDadosServer {
         }
         return null;
     }
+    
+    public void removerClienteDaSala(String nomeCliente, int id){
+        Sala sala = getSala(id);
+        Cliente clienteaux = null;
+        Iterator<Cliente> itera = sala.getClientes().iterator();
+        while(itera.hasNext()){
+            clienteaux = itera.next();
+            if(clienteaux.getNome().equals(nomeCliente)){
+                break;
+            }
+        }
+        List<Cliente> clientes = sala.getClientes();
+        if(clienteaux!=null){
+            clientes.remove(clienteaux);
+        }
+        
+    }
 
     public String finalizaJogo(int id, double saldo1, double saldo2, double saldo3, double saldo4, double saldo5, double saldo6) {
 
         return "";
+    }
+    
+    public int verificaUser(String nome) {
+        Cliente cliente;
+        Iterator<Cliente> itera = clientesOnline.iterator();
+        int opcao = 0;
+        while(itera.hasNext()){
+            cliente = itera.next();
+            if(cliente.getNome().equals(nome)){
+                opcao = 1;
+                break;
+            }
+        }
+        itera = clientesOciosos.iterator();
+        while(itera.hasNext()){
+            cliente = itera.next();
+            if(cliente.getNome().equals(nome)){
+                opcao = 2;
+                break;
+            }
+        }
+        return opcao;//0-usuario não esta online / 1-usuario esta online / 2-usuario estava ocioso
     }
 }

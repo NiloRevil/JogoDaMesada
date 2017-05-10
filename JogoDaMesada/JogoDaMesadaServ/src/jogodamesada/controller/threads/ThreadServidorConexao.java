@@ -10,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 import javax.swing.JTextArea;
@@ -74,6 +75,9 @@ public class ThreadServidorConexao extends Thread {
                 case 1://acessa uma sala
                     String nomeAcesso = informacoes[1];
                     String senhaAcesso = informacoes[2];
+                    
+                    int estaEmSala = controller.verificaUser(nomeAcesso);//criar switch case para os casos...
+                    
                     String ipAcesso = cliente.getInetAddress().getHostAddress();
                     int portaAcesso = cliente.getPort();
                     Sala salaAcesso;
@@ -110,6 +114,17 @@ public class ThreadServidorConexao extends Thread {
                                 saida.flush();
                             }
                         }
+                        s = "Entrar em sala: " + nomeAcesso;//log
+                    } catch (SocketException e) {
+                        System.out.println("cliente desconectou do nada: " + nomeAcesso);
+                        textField.setText(textField.getText() + "\nErro cliente desconectou inesperadamente: " + nomeAcesso);//cliente não foi finalizado
+                        try{
+                            controller.removerClienteDaSala(nomeAcesso, idSala);
+                        }catch(Exception ea){
+                            System.out.println("deu ruim aqui " + e);
+                        }
+                        
+                        
                     } catch (Exception e) {
                         System.out.println("conexao erro " + e);
                     }
@@ -122,8 +137,8 @@ public class ThreadServidorConexao extends Thread {
             saida.close();//finaliza a saida
             cliente.close();//fecha o cliente
         } catch (Exception e) {//caso alguma exceção seja lançada
-            System.out.println("Excecao ocorrida na thread: " + e.getMessage());
-            textField.setText(textField.getText() + "\nExcecao ocorrida na thread: " + e);//caso alguma exceção desconheciada seja lançada ela encerra a thread e é exibida
+            System.out.println("Excecao ocorrida na thread: " + e);
+            textField.setText(textField.getText() + "\nExcecao ocorrida na thread: " + e.getMessage());//caso alguma exceção desconheciada seja lançada ela encerra a thread e é exibida
             try {
                 cliente.close();   //finaliza o cliente
             } catch (Exception ec) {
