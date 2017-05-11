@@ -200,15 +200,15 @@ public class ControllerDadosServer {
             if(sala.getId() == id){
                 iteraCliente = sala.getClientes().iterator();
                 List<Integer> ordem = new ArrayList<Integer>();
-                for(int a = 1; a<sala.getClientes().size() ; a++){
-                    ordem.add(a);
+                for(int a = 0; a<sala.getClientes().size() ; a++){
+                    ordem.add(a+1);
                 }
                 Collections.shuffle(ordem);
-                //int[] ordemV = ordem.toArray();
                 int i = 0;
                 while(iteraCliente.hasNext()){
                     cliente = iteraCliente.next();
                     todasConexoes = todasConexoes + "|" + cliente.getNome() + "$" + cliente.getIp() + "$" + cliente.getPorta() + "$" + ordem.get(i);
+                    System.out.println("chegou aqui hihi");
                     i++;
                 }
                 return todasConexoes;
