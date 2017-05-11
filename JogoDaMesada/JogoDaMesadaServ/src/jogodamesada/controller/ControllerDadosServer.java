@@ -30,7 +30,7 @@ public class ControllerDadosServer {
 
     private static ControllerDadosServer unicaInstancia;
 
-  //  private List<Cliente> clientesAguardando;
+    //  private List<Cliente> clientesAguardando;
     private List<Sala> salasAbertas;
     private List<Sala> salasFechadas;
     private List<Cliente> clientesOnline;
@@ -185,6 +185,22 @@ public class ControllerDadosServer {
         salasAbertas.remove(sala);
         sala.setAberta(false);
         salasFechadas.add(sala);
+
+        Iterator<Cliente> iteraCliente;
+        Cliente cliente;
+        iteraCliente = sala.getClientes().iterator();
+        List<Integer> ordem = new ArrayList<Integer>();
+        for (int a = 0; a < sala.getClientes().size(); a++) {
+            ordem.add(a + 1);
+        }
+        Collections.shuffle(ordem);
+        int i = 1;
+        while (iteraCliente.hasNext()) {
+            cliente = iteraCliente.next();
+            cliente.setOrdem(i);
+            i++;
+        }
+
         return conexoes(id);
     }
 
@@ -195,104 +211,96 @@ public class ControllerDadosServer {
         Iterator<Cliente> iteraCliente;
         Cliente cliente;
         String todasConexoes = "";
-        while(itera.hasNext()){
+        while (itera.hasNext()) {
             sala = itera.next();
-            if(sala.getId() == id){
+            if (sala.getId() == id) {
                 iteraCliente = sala.getClientes().iterator();
-                List<Integer> ordem = new ArrayList<Integer>();
-                for(int a = 0; a<sala.getClientes().size() ; a++){
-                    ordem.add(a+1);
-                }
-                Collections.shuffle(ordem);
-                int i = 0;
-                while(iteraCliente.hasNext()){
+                while (iteraCliente.hasNext()) {
                     cliente = iteraCliente.next();
-                    todasConexoes = todasConexoes + "|" + cliente.getNome() + "$" + cliente.getIp() + "$" + cliente.getPorta() + "$" + ordem.get(i);
-                    System.out.println("chegou aqui hihi");
-                    i++;
+                    todasConexoes = todasConexoes + "|" + cliente.getNome() + "$" + cliente.getIp() + "$" + cliente.getPorta() + "$" + cliente.getOrdem();
                 }
                 return todasConexoes;
             }
         }
         return null;
     }
-    
-    public void removerClienteDaSala(String nomeCliente, int id){
+
+    public void removerClienteDaSala(String nomeCliente, int id) {
         Sala sala = getSala(id);
         Cliente clienteaux = null;
         Iterator<Cliente> itera = sala.getClientes().iterator();
-        while(itera.hasNext()){
+        while (itera.hasNext()) {
             clienteaux = itera.next();
-            if(clienteaux.getNome().equals(nomeCliente)){
+            if (clienteaux.getNome().equals(nomeCliente)) {
                 break;
             }
         }
         List<Cliente> clientes = sala.getClientes();
         List<Cliente> clientesVotos = sala.getVotosSim();
-        if(clienteaux!=null){
+        if (clienteaux != null) {
             clientes.remove(clienteaux);
             clientesVotos.remove(clienteaux);
             clientesOnline.remove(clienteaux);
         }
-        
+
     }
 
     public String finalizaJogo(int id, double saldo1, double saldo2, double saldo3, double saldo4, double saldo5, double saldo6) {
 
         return "";
     }
-    
+
     public int verificaUser(String nome) {//adicionar eles nas listas...
         Cliente cliente = null;
         Iterator<Cliente> itera = clientesOnline.iterator();
         int opcao = 0;
-        while(itera.hasNext()){
+        while (itera.hasNext()) {
             cliente = itera.next();
-            if(cliente.getNome().equals(nome)){
+            if (cliente.getNome().equals(nome)) {
                 return opcao = 1;
             }
         }
         itera = clientesOciosos.iterator();
-        while(itera.hasNext()){
+        while (itera.hasNext()) {
             cliente = itera.next();
-            if(cliente.getNome().equals(nome)){
+            if (cliente.getNome().equals(nome)) {
                 return opcao = 2;
             }
         }
-        
+
         return opcao;//0-usuario não esta online / 1-usuario esta online / 2-usuario estava ocioso
     }
-    
-    public void votar(String nomeAcesso,String senhaAcesso, int idSala, String voto){
+
+    public void votar(String nomeAcesso, String senhaAcesso, int idSala, String voto) {
         Cliente aux;
         Sala sala = getSala(idSala);
         List<Cliente> clientes = sala.getClientes();
         Iterator<Cliente> itera = clientes.iterator();
-        while(itera.hasNext()){
+        while (itera.hasNext()) {
             aux = itera.next();
-            if(aux.getNome().equals(nomeAcesso)){
+            if (aux.getNome().equals(nomeAcesso)) {
                 List<Cliente> clientesVotos = sala.getVotosSim();
                 Iterator<Cliente> iteraVotos = clientesVotos.iterator();
                 Cliente aux2 = null;
                 int naoEsta = 0;
-                while(iteraVotos.hasNext()){
+                while (iteraVotos.hasNext()) {
                     aux2 = iteraVotos.next();
-                    if(aux2.getNome().equals(aux.getNome())){
+                    if (aux2.getNome().equals(aux.getNome())) {
                         //aux2 = aux;
                         naoEsta = 1;
                         break;
                     }
                 }
-                if(naoEsta == 0 && voto.equals("Sim")){
+                if (naoEsta == 0 && voto.equals("Sim")) {
                     clientesVotos.add(aux);
                     break;
-                }else if(naoEsta == 1 && voto.equals("Nao")){
-                    if(aux2!=null){
+                } else if (naoEsta == 1 && voto.equals("Nao")) {
+                    if (aux2 != null) {
                         clientesVotos.remove(aux2);
                     }
                 }
             }
         }
-        
+
     }
 }
