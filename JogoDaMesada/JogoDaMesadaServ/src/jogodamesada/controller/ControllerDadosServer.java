@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import jogodamesada.model.*;
@@ -198,9 +199,17 @@ public class ControllerDadosServer {
             sala = itera.next();
             if(sala.getId() == id){
                 iteraCliente = sala.getClientes().iterator();
+                List<Integer> ordem = new ArrayList<Integer>();
+                for(int a = 1; a<sala.getClientes().size() ; a++){
+                    ordem.add(a);
+                }
+                Collections.shuffle(ordem);
+                //int[] ordemV = ordem.toArray();
+                int i = 0;
                 while(iteraCliente.hasNext()){
                     cliente = iteraCliente.next();
-                    todasConexoes = todasConexoes + "|" + cliente.getNome() + "$" + cliente.getIp() + "$" + cliente.getPorta();
+                    todasConexoes = todasConexoes + "|" + cliente.getNome() + "$" + cliente.getIp() + "$" + cliente.getPorta() + "$" + ordem.get(i);
+                    i++;
                 }
                 return todasConexoes;
             }
