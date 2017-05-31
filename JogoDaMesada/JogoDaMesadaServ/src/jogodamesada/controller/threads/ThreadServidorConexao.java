@@ -140,14 +140,35 @@ public class ThreadServidorConexao extends Thread {
                                 System.out.println("conexao erro " + e);
                             }
                             break;
-                        case 1:
+                        case 1://ele esta online não pode prosseguir
+                            s = "Cliente Já online" + nomeAcesso;//log
                             saida.writeObject("2|" + "jaestaonline");//2 indica que o usuario esta on line no momento
                             saida.flush();
                             break;
-                        case 2:
+                        case 2://usuario ausente
+                            s = "Eentrando na partida em andamento " + nomeAcesso;//log
+                            try{ 
+                                String conexoesAusentes = controller.getSalaAndamento(nomeAcesso);
+                                saida.writeObject("3" + conexoesAusentes);
+                            }catch(ClienteNaoEncontradoException e){
+                                saida.writeObject("clientenaoestaOn");//erro de campo nao preenchido
+                            }
                             break;
                     }
 
+                    break;
+                case 2:
+                    String nomeAusente = informacoes[1];//recebe as informações para cadastro
+                    try {
+                        controller.clienteAusente(nomeAusente);
+                        s = "Avisa que esta ausente: " + nomeAusente;//log
+                        saida.writeObject("concluido");//envia resposta concluido
+                    } catch (CampoVazioException e) {
+                        saida.writeObject("camponaopreenchido");//erro de campo nao preenchido
+                    } catch (ClienteNaoEncontradoException e) {
+                        saida.writeObject("clientenaoestaOn");//erro de campo nao preenchido
+                    }
+                    saida.flush();
                     break;
             }
             System.out.println("\nCliente atendido com sucesso: " + s + cliente.getRemoteSocketAddress().toString());

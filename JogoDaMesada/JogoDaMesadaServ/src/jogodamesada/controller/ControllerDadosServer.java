@@ -138,6 +138,7 @@ public class ControllerDadosServer {
         if (salasAbertas.size() == 0) {
             Sala sala = new Sala();
             List<Cliente> clientes = sala.getClientes();
+            cliente.setSalaAtual(sala.getId());
             clientes.add(cliente);
             salasAbertas.add(sala);
             return sala.getId();
@@ -150,9 +151,11 @@ public class ControllerDadosServer {
                 if (sala.getTamanho() == 5) {
                     clientes.add(cliente);
                     sala.setAberta(false);
+                    cliente.setSalaAtual(sala.getId());
                     return sala.getId();
                 } else {
                     clientes.add(cliente);
+                    cliente.setSalaAtual(sala.getId());
                     return sala.getId();
                 }
             }
@@ -250,7 +253,7 @@ public class ControllerDadosServer {
         return "";
     }
 
-    public int verificaUser(String nome) {//adicionar eles nas listas...
+    public int verificaUser(String nome) {
         Cliente cliente = null;
         Iterator<Cliente> itera = clientesOnline.iterator();
         int opcao = 0;
@@ -302,5 +305,46 @@ public class ControllerDadosServer {
             }
         }
 
+    }
+    
+    public void clienteAusente(String nome) throws CampoVazioException, ClienteNaoEncontradoException{
+        if(nome == null || nome.equals("")){
+            throw new CampoVazioException();
+        }
+        Cliente cliente = null;
+        Iterator<Cliente> itera = clientesOnline.iterator();
+        int opcao = 0;
+        while (itera.hasNext()) {
+            cliente = itera.next();
+            if (cliente.getNome().equals(nome)) {
+                break;
+            }
+        }
+        if(cliente != null){
+            clientesOnline.remove(cliente);
+            clientesOciosos.add(cliente);
+        }else{
+            throw new ClienteNaoEncontradoException();
+        }
+    }
+    
+    public String getSalaAndamento(String nome) throws ClienteNaoEncontradoException{
+        Cliente cliente = null;
+        Iterator<Cliente> itera = clientesOciosos.iterator();
+        while(itera.hasNext()){
+            cliente = itera.next();
+            if(cliente.getNome().equals(nome)){
+                System.out.println("encontrou ele");
+                break;
+            }
+        }
+        if(cliente != null){
+            String conexoes = conexoes(cliente.getSalaAtual());
+            clientesOciosos.remove(cliente);
+            clientesOnline.add(cliente);
+            return conexoes;
+        }else{
+            return "salanaoencontrada";
+        }
     }
 }
