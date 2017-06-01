@@ -6,34 +6,42 @@
 package jogodamesada.model;
 
 import java.io.Serializable;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  *
  * @author alyso
  */
-public class Cliente implements Serializable{
+public class Cliente implements Serializable {
+
     private String nome;
     private String senha;
     private String ip;
     private String porta;
     private int salaAtual;
     private int ordem;
-    
-    public Cliente(String nome, String senha){
+    private TimerCliente timer = new TimerCliente();
+
+    public Cliente(String nome, String senha) {
         this.nome = nome;
         this.senha = senha;
+        this.timer = new TimerCliente();
     }
-    
-    public String getNome(){
+
+    public String getNome() {
         return nome;
     }
-    public void setNome(String nome){
+
+    public void setNome(String nome) {
         this.nome = nome;
     }
-    public String getSenha(){
+
+    public String getSenha() {
         return senha;
     }
-    public void setSenha(String senha){
+
+    public void setSenha(String senha) {
         this.senha = senha;
     }
 
@@ -68,6 +76,13 @@ public class Cliente implements Serializable{
     public void setOrdem(int ordem) {
         this.ordem = ordem;
     }
-    
-    
+
+    public TimerCliente getTimer() {
+        return timer;
+    }
+
+    public void setTimer(TimerCliente timer) {
+        this.timer = timer;
+    }
+
 }

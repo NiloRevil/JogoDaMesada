@@ -342,9 +342,51 @@ public class ControllerDadosServer {
             String conexoes = conexoes(cliente.getSalaAtual());
             clientesOciosos.remove(cliente);
             clientesOnline.add(cliente);
+            TimerCliente timer = new TimerCliente();
+            cliente.setTimer(timer);
             return conexoes;
         }else{
             return "salanaoencontrada";
         }
+    }
+    
+    public Cliente getClienteOnline(String nome){
+        Iterator<Cliente> itera = clientesOnline.iterator();
+        Cliente cliente;
+        while(itera.hasNext()){
+            cliente = itera.next();
+            if(cliente.getNome().equals(nome)){
+                return cliente;
+            }
+        }
+        return null;
+    }
+    
+    public void renovaTimerClienteOn(String nome) throws CampoVazioException{
+        if(nome == null || nome.equals("")){
+            throw new CampoVazioException();
+        }
+        Iterator<Cliente> itera = clientesOnline.iterator();
+        Cliente cliente;
+        while(itera.hasNext()){
+            cliente = itera.next();
+            if(cliente.getNome().equals(nome)){
+                TimerCliente timer = new TimerCliente();
+                cliente.setTimer(timer);
+            }
+        }
+    }
+    
+    public boolean verificaClienteOnline(Cliente cliente){
+        TimerCliente timerCliente = cliente.getTimer();
+        TimerCliente timerAtual = new TimerCliente();
+        if(timerAtual.getHora()-timerCliente.getHora() < 0){
+            return false;
+        }else if(timerCliente.getHora()-timerAtual.getHora() > 1){
+            return false;
+        }else if(timerAtual.getMinuto()-timerCliente.getMinuto() > 15){
+            return false;
+        }
+        return true;
     }
 }

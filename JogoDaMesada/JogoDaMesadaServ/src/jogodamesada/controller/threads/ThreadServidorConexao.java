@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import javax.swing.JTextArea;
 import jogodamesada.controller.*;
 import jogodamesada.exceptions.*;
+import jogodamesada.model.Cliente;
 import jogodamesada.model.Pacote;
 import jogodamesada.model.Sala;
 
@@ -142,8 +143,16 @@ public class ThreadServidorConexao extends Thread {
                             break;
                         case 1://ele esta online não pode prosseguir
                             s = "Cliente Já online" + nomeAcesso;//log
-                            saida.writeObject("2|" + "jaestaonline");//2 indica que o usuario esta on line no momento
-                            saida.flush();
+                            Cliente clienteOn = controller.getClienteOnline(nomeAcesso);
+                            boolean verifica = controller.verificaClienteOnline(clienteOn);
+                            if(verifica){
+                                saida.writeObject("2|" + "jaestaonline");//2 indica que o usuario esta on line no momento
+                                saida.flush();
+                            }else{
+                                controller.removerClienteDaSala(nomeAcesso, clienteOn.getSalaAtual());
+                                saida.writeObject("4|" + "clienteDesconectado");//2 indica que o usuario esta on line no momento
+                                saida.flush();
+                            }
                             break;
                         case 2://usuario ausente
                             s = "Eentrando na partida em andamento " + nomeAcesso;//log
@@ -167,6 +176,17 @@ public class ThreadServidorConexao extends Thread {
                         saida.writeObject("camponaopreenchido");//erro de campo nao preenchido
                     } catch (ClienteNaoEncontradoException e) {
                         saida.writeObject("clientenaoestaOn");//erro de campo nao preenchido
+                    }
+                    saida.flush();
+                    break;
+                case 3:
+                    String nomeRenova = informacoes[1];
+                    try{
+                        controller.renovaTimerClienteOn(nomeRenova);
+                        s = "Timer resetado: " + nomeRenova;//log
+                        saida.writeObject("concluido");//concluido
+                    }catch(CampoVazioException e){
+                        saida.writeObject("camponaopreenchido");//erro de campo nao preenchido
                     }
                     saida.flush();
                     break;
