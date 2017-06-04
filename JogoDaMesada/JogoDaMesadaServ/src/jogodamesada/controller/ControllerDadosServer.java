@@ -135,7 +135,7 @@ public class ControllerDadosServer {
         cliente.setIp(ip);
         cliente.setPorta("" + porta);
         clientesOnline.add(cliente);
-        if (salasAbertas.size() == 0) {
+        if (salasAbertas.isEmpty()) {
             Sala sala = new Sala();
             List<Cliente> clientes = sala.getClientes();
             cliente.setSalaAtual(sala.getId());
@@ -192,7 +192,7 @@ public class ControllerDadosServer {
         Iterator<Cliente> iteraCliente;
         Cliente cliente;
         iteraCliente = sala.getClientes().iterator();
-        List<Integer> ordem = new ArrayList<Integer>();
+        List<Integer> ordem = new ArrayList<>();
         for (int a = 0; a < sala.getClientes().size(); a++) {
             ordem.add(a + 1);
         }
