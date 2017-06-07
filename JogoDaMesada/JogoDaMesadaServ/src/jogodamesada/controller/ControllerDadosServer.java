@@ -322,6 +322,8 @@ public class ControllerDadosServer {
         }
         if(cliente != null){
             clientesOnline.remove(cliente);
+            TimerCliente timer = new TimerCliente();
+            cliente.setTimer(timer);
             clientesOciosos.add(cliente);
         }else{
             throw new ClienteNaoEncontradoException();
@@ -339,12 +341,20 @@ public class ControllerDadosServer {
             }
         }
         if(cliente != null){
-            String conexoes = conexoes(cliente.getSalaAtual());
-            clientesOciosos.remove(cliente);
-            clientesOnline.add(cliente);
-            TimerCliente timer = new TimerCliente();
-            cliente.setTimer(timer);
-            return conexoes;
+            boolean onLine = verificaClienteOnline(cliente);
+            if(onLine){
+                String conexoes = conexoes(cliente.getSalaAtual());
+                clientesOciosos.remove(cliente);
+                clientesOnline.add(cliente);
+                TimerCliente timer = new TimerCliente();
+                cliente.setTimer(timer);
+                return conexoes;
+            }else{
+                clientesOciosos.remove(cliente);
+                return "salanaoencontrada";
+            }
+            
+            
         }else{
             return "salanaoencontrada";
         }
