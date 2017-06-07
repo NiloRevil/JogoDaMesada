@@ -166,8 +166,8 @@ public class ThreadServidorConexao extends Thread {
                     }
 
                     break;
-                case 2:
-                    String nomeAusente = informacoes[1];//recebe as informações para cadastro
+                case 2: //avisa que host esta off
+                    String nomeAusente = informacoes[1];//recebe as informações
                     try {
                         controller.clienteAusente(nomeAusente);
                         s = "Avisa que esta ausente: " + nomeAusente;//log
@@ -175,6 +175,7 @@ public class ThreadServidorConexao extends Thread {
                     } catch (CampoVazioException e) {
                         saida.writeObject("camponaopreenchido");//erro de campo nao preenchido
                     } catch (ClienteNaoEncontradoException e) {
+                        s = "Retifica que esta ausente: " + nomeAusente;//log
                         saida.writeObject("clientenaoestaOn");//erro de campo nao preenchido
                     }
                     saida.flush();
