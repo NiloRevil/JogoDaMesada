@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  *
- * @author alyso
+ * @author Alyson Dantas
  */
 public class Pacote implements Serializable {
 	

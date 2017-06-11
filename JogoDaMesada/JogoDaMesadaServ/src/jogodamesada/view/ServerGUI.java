@@ -9,7 +9,7 @@ import jogodamesada.controller.*;
 
 /**
  *
- * @author alyso
+ * @author Alyson Dantas
  */
 public class ServerGUI extends javax.swing.JFrame {
     

@@ -11,7 +11,7 @@ import jogodamesada.controller.threads.*;
 
 /**
  *
- * @author alyso
+ * @author Alyson Dantas & Marcelo
  */
 public class ControllerServer {
     private ServerSocket server;
@@ -43,7 +43,12 @@ public class ControllerServer {
 		unicaInstancia = null;
 	}
 
-        
+        /**
+         * Metodo que inicia o servidor
+         * @param porta
+         * @param textArea
+         * @return 
+         */
         public String iniciaServer(int porta, JTextArea textArea){
             try {     
 			System.out.println("Incializando o servidor...");

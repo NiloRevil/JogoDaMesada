@@ -130,6 +130,19 @@ public class ControllerDadosServer {
         }
     }
 
+    /**
+     * Metodo de jogar
+     * @param nome
+     * @param senha
+     * @param ip
+     * @param porta
+     * @return
+     * @throws CampoVazioException
+     * @throws IOException
+     * @throws FileNotFoundException
+     * @throws ClassNotFoundException
+     * @throws SenhaIncorretaException 
+     */
     public int jogar(String nome, String senha, String ip, int porta) throws CampoVazioException, IOException, FileNotFoundException, ClassNotFoundException, SenhaIncorretaException {
         if (nome == null || nome.equals("") || senha == null || senha.equals("")) {
             throw new CampoVazioException();
@@ -138,34 +151,39 @@ public class ControllerDadosServer {
         cliente.setIp(ip);
         cliente.setPorta("" + porta);
         clientesOnline.add(cliente);
-        if (salasAbertas.isEmpty()) {
-            Sala sala = new Sala();
+        if (salasAbertas.isEmpty()) {//se não tiver salas
+            Sala sala = new Sala();//inicia uma sala nova
             List<Cliente> clientes = sala.getClientes();
             cliente.setSalaAtual(sala.getId());
-            clientes.add(cliente);
-            salasAbertas.add(sala);
+            clientes.add(cliente);//obtem o id da sala e o coloca no cliente
+            salasAbertas.add(sala);//adiciona o cliente na sala
             return sala.getId();
-        } else {
+        } else {//caso contrario
             Sala sala;
             Iterator<Sala> ite = salasAbertas.iterator();
-            while (ite.hasNext()) {
+            while (ite.hasNext()) {//procura uma sala livre
                 sala = ite.next();
                 List<Cliente> clientes = sala.getClientes();
-                if (sala.getTamanho() == 5) {
+                if (sala.getTamanho() == 5) {//se ela tiver tamanho 5 então ela vai fechar em seguida
                     clientes.add(cliente);
-                    sala.setAberta(false);
+                    sala.setAberta(false);//avisa que a sala fechou
                     cliente.setSalaAtual(sala.getId());
                     return sala.getId();
-                } else {
+                } else {//caso contrario so add o cliente na sala
                     clientes.add(cliente);
                     cliente.setSalaAtual(sala.getId());
                     return sala.getId();
                 }
             }
         }
-        return -1;
+        return -1;//retorna erro
     }
 
+    /**
+     * Metodo que obtem a sala
+     * @param id
+     * @return 
+     */
     public Sala getSala(int id) {
         Iterator<Sala> itera = salasAbertas.iterator();
         Sala sala;
@@ -186,32 +204,42 @@ public class ControllerDadosServer {
         return null;
     }
 
+    /**
+     * Metodo que inicia o jogo
+     * @param id
+     * @return 
+     */
     public String iniciarJogo(int id) {
         Sala sala = getSala(id);
         salasAbertas.remove(sala);
         sala.setAberta(false);
-        salasFechadas.add(sala);
+        salasFechadas.add(sala);//coloca a sala em fechadas
 
         Iterator<Cliente> iteraCliente;
         Cliente cliente;
         iteraCliente = sala.getClientes().iterator();
         List<Integer> ordem = new ArrayList<>();
         for (int a = 0; a < sala.getClientes().size(); a++) {
-            ordem.add(a + 1);
+            ordem.add(a + 1);//faz uma ordem para os clientes
         }
         Collections.shuffle(ordem);
         int i = 1;
-        while (iteraCliente.hasNext()) {
+        while (iteraCliente.hasNext()) {//coloca a ordem neles
             cliente = iteraCliente.next();
             cliente.setOrdem(i);
             i++;
         }
 
-        return conexoes(id);
+        return conexoes(id);//retorna as conexões dessa sala
     }
 
+    /**
+     * Metodo que cria as conexões
+     * @param id
+     * @return 
+     */
     public String conexoes(int id) {
-        Iterator<Sala> itera = salasFechadas.iterator();
+        Iterator<Sala> itera = salasFechadas.iterator();//obtem a sala
         Sala sala;
         List<Cliente> clientes;
         Iterator<Cliente> iteraCliente;
@@ -222,7 +250,7 @@ public class ControllerDadosServer {
             if (sala.getId() == id) {
                 iteraCliente = sala.getClientes().iterator();
                 while (iteraCliente.hasNext()) {
-                    cliente = iteraCliente.next();
+                    cliente = iteraCliente.next();//coloca as informações dos clientes na string
                     todasConexoes = todasConexoes + "|" + cliente.getNome() + "$" + cliente.getIp() + "$" + cliente.getPorta() + "$" + cliente.getOrdem();
                 }
                 return todasConexoes;
@@ -231,6 +259,11 @@ public class ControllerDadosServer {
         return null;
     }
 
+    /**
+     * Metodo que remove um cliente da sala
+     * @param nomeCliente
+     * @param id 
+     */
     public void removerClienteDaSala(String nomeCliente, int id) {
         Sala sala = getSala(id);
         Cliente clienteaux = null;
@@ -251,6 +284,11 @@ public class ControllerDadosServer {
 
     }
 
+    /**
+     * Metodo que verifica se o usuario esta online
+     * @param nome
+     * @return 
+     */
     public int verificaUser(String nome) {
         Cliente cliente = null;
         Iterator<Cliente> itera = clientesOnline.iterator();
@@ -272,6 +310,13 @@ public class ControllerDadosServer {
         return opcao;//0-usuario não esta online / 1-usuario esta online / 2-usuario estava ocioso
     }
 
+    /**
+     * Metodo que relaiza a votação de uma partida
+     * @param nomeAcesso
+     * @param senhaAcesso
+     * @param idSala
+     * @param voto 
+     */
     public void votar(String nomeAcesso, String senhaAcesso, int idSala, String voto) {
         Cliente aux;
         Sala sala = getSala(idSala);
@@ -279,32 +324,36 @@ public class ControllerDadosServer {
         Iterator<Cliente> itera = clientes.iterator();
         while (itera.hasNext()) {
             aux = itera.next();
-            if (aux.getNome().equals(nomeAcesso)) {
+            if (aux.getNome().equals(nomeAcesso)) {//apos encontrar o usuario que esta votando
                 List<Cliente> clientesVotos = sala.getVotosSim();
                 Iterator<Cliente> iteraVotos = clientesVotos.iterator();
                 Cliente aux2 = null;
                 int naoEsta = 0;
-                while (iteraVotos.hasNext()) {
+                while (iteraVotos.hasNext()) {//verifica todos os votos e verifica se ele ja votou
                     aux2 = iteraVotos.next();
                     if (aux2.getNome().equals(aux.getNome())) {
-                        //aux2 = aux;
                         naoEsta = 1;
                         break;
                     }
                 }
-                if (naoEsta == 0 && voto.equals("Sim")) {
-                    clientesVotos.add(aux);
+                if (naoEsta == 0 && voto.equals("Sim")) {//se não votou e vai votar agora é sim
+                    clientesVotos.add(aux);//add o voto
                     break;
-                } else if (naoEsta == 1 && voto.equals("Nao")) {
+                } else if (naoEsta == 1 && voto.equals("Nao")) {//se votou e vai votar com não
                     if (aux2 != null) {
-                        clientesVotos.remove(aux2);
+                        clientesVotos.remove(aux2);//remove o cliente da lista de quem votou sim
                     }
                 }
             }
         }
-
     }
     
+    /**
+     * Metodo que avisa que um cliente esta ausente
+     * @param nome
+     * @throws CampoVazioException
+     * @throws ClienteNaoEncontradoException 
+     */
     public void clienteAusente(String nome) throws CampoVazioException, ClienteNaoEncontradoException{
         if(nome == null || nome.equals("")){
             throw new CampoVazioException();
@@ -329,6 +378,12 @@ public class ControllerDadosServer {
         }
     }
     
+    /**
+     * Metodo que obtem a sala em andamento
+     * @param nome
+     * @return
+     * @throws ClienteNaoEncontradoException 
+     */
     public String getSalaAndamento(String nome) throws ClienteNaoEncontradoException{
         Cliente cliente = null;
         Iterator<Cliente> itera = clientesOciosos.iterator();
@@ -359,6 +414,11 @@ public class ControllerDadosServer {
         }
     }
     
+    /**
+     * Metodo que obtem o cliente que esta on line
+     * @param nome
+     * @return 
+     */
     public Cliente getClienteOnline(String nome){
         Iterator<Cliente> itera = clientesOnline.iterator();
         Cliente cliente;
@@ -371,6 +431,11 @@ public class ControllerDadosServer {
         return null;
     }
     
+    /**
+     * Metodo que obtem o cliente ausente
+     * @param nome
+     * @return 
+     */
     public Cliente getClienteAusente(String nome){
         Iterator<Cliente> itera = clientesOciosos.iterator();
         Cliente cliente;
@@ -383,6 +448,11 @@ public class ControllerDadosServer {
         return null;
     }
     
+    /**
+     * Metodo que renova o timer de um cliente que esta on
+     * @param nome
+     * @throws CampoVazioException 
+     */
     public void renovaTimerClienteOn(String nome) throws CampoVazioException{
         if(nome == null || nome.equals("")){
             throw new CampoVazioException();
@@ -398,6 +468,11 @@ public class ControllerDadosServer {
         }
     }
     
+    /**
+     * Metodo que verifica se um cliente esta on pelo timer
+     * @param cliente
+     * @return 
+     */
     public boolean verificaClienteOnline(Cliente cliente){
         TimerCliente timerCliente = cliente.getTimer();
         TimerCliente timerAtual = new TimerCliente();
@@ -411,6 +486,11 @@ public class ControllerDadosServer {
         return true;
     }
     
+    /**
+     * Metodo que obtem a sala que esta fechanda
+     * @param id
+     * @return 
+     */
     public Sala getSalaFechando(int id) {
         Iterator<Sala> itera = salasFinalizando.iterator();
         Sala sala;
@@ -424,6 +504,12 @@ public class ControllerDadosServer {
         return null;
     }
     
+    /**
+     * Metodo que sinaliza que uma sala esta no fim
+     * @param cliente
+     * @param saldo
+     * @throws SalaNaoEncontradaException 
+     */
     public synchronized void sinalizaFimDeSala(Cliente cliente, int saldo) throws SalaNaoEncontradaException{
         if(cliente == null){
             System.out.println("Erro cliente nulo");
@@ -457,6 +543,11 @@ public class ControllerDadosServer {
         }
     }
     
+    /**
+     * Metodo que finaliza a sala e avisa que finalizou
+     * @param idSala
+     * @return 
+     */
     public boolean finalizaSala(int idSala){
         System.out.println("finaliza sala + " + idSala);
         Sala sala = getSalaFechando(idSala);
@@ -488,23 +579,21 @@ public class ControllerDadosServer {
         return false;      
     }
     
+    /**
+     * Metodo que finaliza o jogo e retorna para os clientes a string de fim
+     * @param idSala
+     * @return 
+     */
     public String finalizaJogo(int idSala) {
-        System.out.println("partida finalizada");
         Sala sala = getSalaFechando(idSala);
-        if(sala == null){
-            System.out.println("erro sala nula");
-        }
-        System.out.println("sala finalizada recuperada");
         List<Cliente> clientes = sala.getClientes();
-        System.out.println("clientes finalizados recuperados");
-        Collections.sort (clientes, new Comparator() {
+        Collections.sort (clientes, new Comparator() {//ordena pelo saldo que cada um tem
             public int compare(Object o1, Object o2) {
                 Cliente p1 = (Cliente) o1;
                 Cliente p2 = (Cliente) o2;
                 return p1.getSaldo() < p2.getSaldo() ? -1 : (p1.getSaldo() > p2.getSaldo() ? +1 : 0);
             }
         });
-        System.out.println("ordenou clientes");
         Iterator<Cliente> itera = clientes.iterator();
         Cliente cliente;
         String fim = "01";
@@ -516,6 +605,10 @@ public class ControllerDadosServer {
         return fim;
     }
     
+    /**
+     * Metodo que remove o cliente das salas
+     * @param cliente 
+     */
     public void removeClienteSalas(Cliente cliente){
         clientesOciosos.remove(cliente);
         clientesOnline.remove(cliente);

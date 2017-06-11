@@ -7,7 +7,7 @@ package jogodamesada.exceptions;
 
 /**
  *
- * @author alyso
+ * @author Alyson Dantas
  */
 public class SalaNaoEncontradaException extends Exception{
     

@@ -12,7 +12,7 @@ import java.util.TimerTask;
 
 /**
  *
- * @author alyso
+ * @author Alyson Dantas
  */
 public class TimerCliente implements Serializable {
 
