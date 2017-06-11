@@ -106,12 +106,12 @@ public class ThreadServidorConexao extends Thread {
                                             System.out.println("pessoas na sala:" + informacao);
                                             if (tamanho > 1) {
                                                 int votos = salaAtual.getVotosSim().size();
-                                                if(votos == salaAtual.getTamanho()){
+                                                if (votos == salaAtual.getTamanho()) {
                                                     controller.iniciarJogo(idSala);
                                                     salaAtual.setAberta(false);
                                                 }
                                                 informacao = informacao + "|podeiniciar";
-                                                
+
                                             } else {
                                                 informacao = informacao + "|aindanao";
                                             }
@@ -120,7 +120,7 @@ public class ThreadServidorConexao extends Thread {
                                             String votacao = (String) entrada.readObject();//obtem o pacote de entrada
                                             String pessoaVoto[] = votacao.split(Pattern.quote("|"));
                                             System.out.println("Pessoa:" + pessoaVoto[0] + "Voto:" + pessoaVoto[1]);
-                                            controller.votar(nomeAcesso,senhaAcesso, idSala, pessoaVoto[1]);
+                                            controller.votar(nomeAcesso, senhaAcesso, idSala, pessoaVoto[1]);
                                         }
                                         System.out.println("A sala: " + idSala + " fechou com: " + controller.conexoes(idSala));
                                         saida.writeObject("1" + controller.conexoes(idSala));
@@ -145,10 +145,10 @@ public class ThreadServidorConexao extends Thread {
                             s = "Cliente Já online" + nomeAcesso;//log
                             Cliente clienteOn = controller.getClienteOnline(nomeAcesso);
                             boolean verifica = controller.verificaClienteOnline(clienteOn);
-                            if(verifica){
+                            if (verifica) {
                                 saida.writeObject("2|" + "jaestaonline");//2 indica que o usuario esta on line no momento
                                 saida.flush();
-                            }else{
+                            } else {
                                 controller.removerClienteDaSala(nomeAcesso, clienteOn.getSalaAtual());
                                 saida.writeObject("4|" + "clienteDesconectado");//2 indica que o usuario esta on line no momento
                                 saida.flush();
@@ -156,10 +156,10 @@ public class ThreadServidorConexao extends Thread {
                             break;
                         case 2://usuario ausente
                             s = "Eentrando na partida em andamento " + nomeAcesso;//log
-                            try{ 
+                            try {
                                 String conexoesAusentes = controller.getSalaAndamento(nomeAcesso);
                                 saida.writeObject("3" + conexoesAusentes);
-                            }catch(ClienteNaoEncontradoException e){
+                            } catch (ClienteNaoEncontradoException e) {
                                 saida.writeObject("clientenaoestaOn");//erro de campo nao preenchido
                             }
                             break;
@@ -169,9 +169,11 @@ public class ThreadServidorConexao extends Thread {
                 case 2: //avisa que host esta off
                     String nomeAusente = informacoes[1];//recebe as informações
                     try {
+                        System.out.println("inicia ausencia de " + nomeAusente);
                         controller.clienteAusente(nomeAusente);
                         s = "Avisa que esta ausente: " + nomeAusente;//log
                         saida.writeObject("concluido");//envia resposta concluido
+                        System.out.println("finaliza cliente ausente: " + nomeAusente);
                     } catch (CampoVazioException e) {
                         saida.writeObject("camponaopreenchido");//erro de campo nao preenchido
                     } catch (ClienteNaoEncontradoException e) {
@@ -180,16 +182,40 @@ public class ThreadServidorConexao extends Thread {
                     }
                     saida.flush();
                     break;
-                case 3:
+                case 3: //reseta o timer de um jogador
                     String nomeRenova = informacoes[1];
-                    try{
+                    try {
                         controller.renovaTimerClienteOn(nomeRenova);
                         s = "Timer resetado: " + nomeRenova;//log
                         saida.writeObject("concluido");//concluido
-                    }catch(CampoVazioException e){
+                    } catch (CampoVazioException e) {
                         saida.writeObject("camponaopreenchido");//erro de campo nao preenchido
                     }
                     saida.flush();
+                    break;
+                case 4://finaliza partida
+                    String nomeFinaliza = informacoes[1];
+                    int saldo = Integer.parseInt(informacoes[2]);//recebe a opcao que o cliente mandou
+                    System.out.println("recuperar o cliente + " + nomeFinaliza);
+                    Cliente cliente = controller.getClienteOnline(nomeFinaliza);
+                    System.out.println("cliente recuperado " + cliente.getNome());
+                    try {
+                        controller.sinalizaFimDeSala(cliente, saldo);
+                        System.out.println("Inicia pedido de finalizar partida: " + nomeFinaliza + " id sala " + cliente.getSalaAtual());
+                        boolean acabou = false;
+                        while (!acabou) {
+                            acabou = controller.finalizaSala(cliente.getSalaAtual());
+                            Thread.sleep(1000);
+                        }
+                        String fim = controller.finalizaJogo(cliente.getSalaAtual());
+                        System.out.println("Fim da partida enviado para:" + nomeFinaliza + " | " + fim);
+                        s = "Partida finalizada por: " + nomeFinaliza;//log
+                        saida.writeObject(fim);//concluido
+                    } catch (SalaNaoEncontradaException e) {
+                        saida.writeObject("SalaNaoEncontrada");
+                    }
+                    saida.flush();
+
                     break;
             }
             System.out.println("\nCliente atendido com sucesso: " + s + cliente.getRemoteSocketAddress().toString());
@@ -198,7 +224,7 @@ public class ThreadServidorConexao extends Thread {
             entrada.close();//finaliza a entrada
             saida.close();//finaliza a saida
             cliente.close();//fecha o cliente
-        }catch(SocketException e){
+        } catch (SocketException e) {
             System.out.println("Filanizou o atendimento.");
             textField.setText(textField.getText() + "\nAtendimento foi finalizado.");//caso alguma exceção desconheciada seja lançada ela encerra a thread e é exibida
             try {
@@ -206,7 +232,8 @@ public class ThreadServidorConexao extends Thread {
             } catch (Exception ec) {
                 textField.setText(textField.getText() + "\nErro fatal cliente não finalizado: " + ec.getMessage());//cliente não foi finalizado
             }
-        }catch (Exception e) {//caso alguma exceção seja lançada
+        } catch (Exception e) {//caso alguma exceção seja lançada
+            e.printStackTrace();
             System.out.println("Excecao ocorrida na thread: " + e);
             textField.setText(textField.getText() + "\nExcecao ocorrida na thread: " + e.getMessage());//caso alguma exceção desconheciada seja lançada ela encerra a thread e é exibida
             try {

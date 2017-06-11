@@ -6,8 +6,6 @@
 package jogodamesada.model;
 
 import java.io.Serializable;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  *
@@ -22,6 +20,7 @@ public class Cliente implements Serializable {
     private int salaAtual;
     private int ordem;
     private TimerCliente timer = new TimerCliente();
+    private int saldo;
 
     public Cliente(String nome, String senha) {
         this.nome = nome;
@@ -85,4 +84,13 @@ public class Cliente implements Serializable {
         this.timer = timer;
     }
 
+    public int getSaldo() {
+        return saldo;
+    }
+
+    public void setSaldo(int saldo) {
+        this.saldo = saldo;
+    }
+    
+    
 }

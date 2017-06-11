@@ -18,6 +18,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import jogodamesada.model.*;
@@ -33,6 +34,7 @@ public class ControllerDadosServer {
     //  private List<Cliente> clientesAguardando;
     private List<Sala> salasAbertas;
     private List<Sala> salasFechadas;
+    private List<Sala> salasFinalizando;
     private List<Cliente> clientesOnline;
     private List<Cliente> clientesOciosos;
 
@@ -40,6 +42,7 @@ public class ControllerDadosServer {
         //clientesAguardando = new ArrayList<Cliente>();
         salasAbertas = new ArrayList<Sala>();
         salasFechadas = new ArrayList<Sala>();
+        salasFinalizando = new ArrayList<Sala>();
         clientesOciosos = new ArrayList<Cliente>();
         clientesOnline = new ArrayList<Cliente>();
     }
@@ -248,11 +251,6 @@ public class ControllerDadosServer {
 
     }
 
-    public String finalizaJogo(int id, double saldo1, double saldo2, double saldo3, double saldo4, double saldo5, double saldo6) {
-
-        return "";
-    }
-
     public int verificaUser(String nome) {
         Cliente cliente = null;
         Iterator<Cliente> itera = clientesOnline.iterator();
@@ -311,22 +309,23 @@ public class ControllerDadosServer {
         if(nome == null || nome.equals("")){
             throw new CampoVazioException();
         }
+        System.out.println("Cliente que vai ficar ausente: " + nome);
         Cliente cliente = null;
         Iterator<Cliente> itera = clientesOnline.iterator();
         int opcao = 0;
+        boolean verifica = false;
         while (itera.hasNext()) {
             cliente = itera.next();
             if (cliente.getNome().equals(nome)) {
+                System.out.println(cliente.getNome() + " igual " + nome);
+                verifica = true;
+                clientesOnline.remove(cliente);
+                TimerCliente timer = new TimerCliente();
+                cliente.setTimer(timer);
+                System.out.println("Cliente que ficou ausente: " + cliente.getNome());
+                clientesOciosos.add(cliente);
                 break;
             }
-        }
-        if(cliente != null){
-            clientesOnline.remove(cliente);
-            TimerCliente timer = new TimerCliente();
-            cliente.setTimer(timer);
-            clientesOciosos.add(cliente);
-        }else{
-            throw new ClienteNaoEncontradoException();
         }
     }
     
@@ -372,6 +371,18 @@ public class ControllerDadosServer {
         return null;
     }
     
+    public Cliente getClienteAusente(String nome){
+        Iterator<Cliente> itera = clientesOciosos.iterator();
+        Cliente cliente;
+        while(itera.hasNext()){
+            cliente = itera.next();
+            if(cliente.getNome().equals(nome)){
+                return cliente;
+            }
+        }
+        return null;
+    }
+    
     public void renovaTimerClienteOn(String nome) throws CampoVazioException{
         if(nome == null || nome.equals("")){
             throw new CampoVazioException();
@@ -398,5 +409,115 @@ public class ControllerDadosServer {
             return false;
         }
         return true;
+    }
+    
+    public Sala getSalaFechando(int id) {
+        Iterator<Sala> itera = salasFinalizando.iterator();
+        Sala sala;
+        while (itera.hasNext()) {
+            sala = itera.next();
+            if (sala.getId() == id) {
+                return sala;
+            }
+        }
+       
+        return null;
+    }
+    
+    public synchronized void sinalizaFimDeSala(Cliente cliente, int saldo) throws SalaNaoEncontradaException{
+        if(cliente == null){
+            System.out.println("Erro cliente nulo");
+        }
+        int idSala = cliente.getSalaAtual();
+        Sala sala = getSalaFechando(idSala);
+        List<Cliente> votos = new ArrayList<Cliente>();
+        
+        if(sala == null){
+            sala = getSala(idSala);
+            if(sala == null){
+                throw new SalaNaoEncontradaException();
+            }
+            salasAbertas.remove(sala);
+            sala.setVotosSim(votos);
+            System.out.println("1Remove de salas abertas " + cliente.getNome());
+            sala.setAberta(true);
+            votos = sala.getVotosSim();
+            cliente.setSaldo(saldo);
+            votos.add(cliente);
+            salasFinalizando.add(sala);
+            System.out.println("1Adiciona em salas finalizando " + cliente.getNome() + " sala id " + sala.getId());
+            
+        }else{
+            
+            votos = sala.getVotosSim();
+            cliente.setSaldo(saldo);
+            votos.add(cliente);
+            System.out.println("2Adiciona na lista de votos para finalizar " + cliente.getNome());
+            
+        }
+    }
+    
+    public boolean finalizaSala(int idSala){
+        System.out.println("finaliza sala + " + idSala);
+        Sala sala = getSalaFechando(idSala);
+        int votos = sala.getVotosSim().size();
+        int qtdClientes = sala.getTamanho();
+        Iterator<Cliente> itera = sala.getClientes().iterator();
+        Cliente aux;
+        Cliente aux2;
+        Iterator<Cliente> iteraOciosos;
+        while(itera.hasNext()){
+            aux = itera.next();
+            iteraOciosos = clientesOciosos.iterator();
+            while(iteraOciosos.hasNext()){
+                aux2 = iteraOciosos.next();
+                if(aux2.getNome().equals(aux.getNome())){
+                    qtdClientes = qtdClientes - 1;
+                    System.out.println("Esta ausente no final da partida " + aux2.getNome());
+                }
+            }
+        }
+        
+        System.out.println("quantidade de votos " + votos + " quantidade de clientes" + qtdClientes);
+        if(votos == qtdClientes){
+            salasFechadas.add(sala);
+            System.out.println("retornou true sala off pronta");
+            return true;
+        }
+        
+        return false;      
+    }
+    
+    public String finalizaJogo(int idSala) {
+        System.out.println("partida finalizada");
+        Sala sala = getSalaFechando(idSala);
+        if(sala == null){
+            System.out.println("erro sala nula");
+        }
+        System.out.println("sala finalizada recuperada");
+        List<Cliente> clientes = sala.getClientes();
+        System.out.println("clientes finalizados recuperados");
+        Collections.sort (clientes, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                Cliente p1 = (Cliente) o1;
+                Cliente p2 = (Cliente) o2;
+                return p1.getSaldo() < p2.getSaldo() ? -1 : (p1.getSaldo() > p2.getSaldo() ? +1 : 0);
+            }
+        });
+        System.out.println("ordenou clientes");
+        Iterator<Cliente> itera = clientes.iterator();
+        Cliente cliente;
+        String fim = "01";
+        while(itera.hasNext()){
+            cliente = itera.next();
+            removeClienteSalas(cliente);
+            fim = fim + "|" + cliente.getNome() + "|" + cliente.getSaldo();
+        }
+        return fim;
+    }
+    
+    public void removeClienteSalas(Cliente cliente){
+        clientesOciosos.remove(cliente);
+        clientesOnline.remove(cliente);
     }
 }
